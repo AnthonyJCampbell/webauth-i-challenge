@@ -4,6 +4,20 @@ const bcrypt = require('bcryptjs')
 const server = express();
 server.use(express.json())
 
+async function add(user) {
+  const [id] = await db('users').insert(user);
+
+  return findById(id)
+}
+
+function findBy(filter) {
+  return db('users').where(filter);
+}
+
+function findById(id) {
+  return db('users').where('user_id', '=', id).first();
+}
+
 // server.get('/api/users', (req, res) => {
 
 // })
@@ -14,7 +28,7 @@ server.post('/api/register', (req, res) => {
   let user = { username, password}
   user.password = bcrypt.hashSync(password, 10);
   console.log(user)
-  db('users').insert(user)
+  add(user)
     .then(data => {
       console.log(data)
       res.status(200).json(data);
@@ -22,6 +36,23 @@ server.post('/api/register', (req, res) => {
     .catch(err => {
       res.status(500).json(err)
     })
+})
+
+// POST
+server.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  db('users').where({username}).first()
+  .then(user => {
+    if (user && bcrypt.compareSync(password, user.password)) {
+      res.status(200).json({ message: `Welcome ${user.username}!` });
+      console.log('made it into if')
+    } else {
+      res.status(401).json({ message: 'Invalid Credentials' });
+    }
+  })
+  .catch(err => {
+    res.status(500).json(err);
+  })
 })
 
 module.exports = server
