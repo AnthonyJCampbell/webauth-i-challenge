@@ -18,16 +18,13 @@ function findById(id) {
   return db('users').where('user_id', '=', id).first();
 }
 
-// server.get('/api/users', (req, res) => {
 
-// })
 
 // Returns id of newly-created user
 server.post('/api/register', (req, res) => {
   const { username, password } = req.body;
   let user = { username, password}
   user.password = bcrypt.hashSync(password, 10);
-  console.log(user)
   add(user)
     .then(data => {
       console.log(data)
@@ -45,9 +42,8 @@ server.post('/api/login', (req, res) => {
   .then(user => {
     if (user && bcrypt.compareSync(password, user.password)) {
       res.status(200).json({ message: `Welcome ${user.username}!` });
-      console.log('made it into if')
     } else {
-      res.status(401).json({ message: 'Invalid Credentials' });
+      res.status(401).json({ message: 'You shall not pass' });
     }
   })
   .catch(err => {
